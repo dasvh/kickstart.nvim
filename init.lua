@@ -114,11 +114,6 @@ vim.opt.scrolloff = 10
 -- See `:help 'confirm'`
 vim.opt.confirm = true
 
--- set tabs to 4 spaces (default is 8)
-vim.bo.tabstop = 4
-vim.bo.shiftwidth = 4
-vim.bo.softtabstop = 4
-
 -- highlight ExtraWhitespace
 -- TODO: does not seem to clear all whitespace (-> did not work for yaml file)
 vim.api.nvim_set_hl(0, 'ExtraWhitespace', {
@@ -177,6 +172,17 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function()
     vim.highlight.on_yank()
+  end,
+})
+
+-- Set correct indendation for Go files
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'go',
+  callback = function()
+    vim.bo.tabstop = 4
+    vim.bo.shiftwidth = 4
+    vim.bo.softtabstop = 4
+    vim.bo.expandtab = false
   end,
 })
 
