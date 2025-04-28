@@ -2,4 +2,11 @@
 --  I promise not to create any merge conflicts in this directory :)
 --
 -- See the kickstart.nvim README for more information
-return {}
+return {
+  dir = vim.fn.stdpath('config') .. '/lua/custom/task',
+  name = 'custom-task',
+  lazy = false,
+  config = function()
+    require('custom.task').setup()
+  end,
+}
