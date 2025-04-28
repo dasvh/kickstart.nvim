@@ -12,11 +12,16 @@ end
 
 Module.get_tasks = function()
   local response = vim.fn.system 'task --list --json'
-  local data = vim.fn.json_decode(response)
+  local exit_code = vim.v.shell_error
 
-  -- TODO: handle 'file does not exist' from task
-  if not data or not data.tasks then
-    vim.notify('No tasks found or failed to parse JSON', vim.log.levels.ERROR)
+  if exit_code ~= 0 then
+    vim.notify('Task command failed (missing Taskfile?)', vim.log.levels.ERROR)
+    return {}
+  end
+
+  local ok, data = pcall(vim.fn.json_decode, response)
+  if not ok or not data or not data.tasks then
+    vim.notify('Failed to parse task output.', vim.log.levels.ERROR)
     return {}
   end
 
@@ -27,7 +32,7 @@ Module.execute_task = function(task)
   local width, height, row, col = centered_float_size()
 
   local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_open_win(buf, true, {
+  local win = vim.api.nvim_open_win(buf, true, {
     relative = 'editor',
     row = row,
     col = col,
@@ -38,8 +43,21 @@ Module.execute_task = function(task)
   })
 
   vim.api.nvim_set_current_buf(buf)
-  vim.fn.termopen('task ' .. task)
-  --  vim.cmd 'startinsert'
+  vim.fn.termopen('task ' .. task, {
+    on_stdout = function(_, _, _)
+      vim.api.nvim_command 'normal! G'
+    end,
+    on_stderr = function(_, _, _)
+      vim.api.nvim_command 'normal! G'
+    end,
+    on_exit = function()
+      vim.api.nvim_command 'normal! G'
+    end,
+  })
+
+  vim.keymap.set('n', 'q', function()
+    vim.api.nvim_win_close(win, true)
+  end, { buffer = buf, nowait = true, silent = true })
 end
 
 Module.on_choice = function(item)
