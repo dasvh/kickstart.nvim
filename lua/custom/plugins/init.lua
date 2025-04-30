@@ -7,6 +7,12 @@ return {
   name = 'custom-task',
   lazy = false,
   config = function()
-    require('custom.task').setup()
+    require('custom.task').setup({
+      float = {
+        width = 0.6,
+        height = 0.5,
+        border = 'single',
+      },
+    })
   end,
 }
