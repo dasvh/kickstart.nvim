@@ -2,17 +2,17 @@
 --  I promise not to create any merge conflicts in this directory :)
 --
 -- See the kickstart.nvim README for more information
+-- nvim/lua/custom/plugins/taskfile.lua
 return {
-  dir = vim.fn.stdpath('config') .. '/lua/custom/task',
-  name = 'custom-task',
+  'dasvh/taskfile.nvim',
   lazy = false,
   config = function()
-    require('custom.task').setup({
+    require('taskfile').setup {
       float = {
         width = 0.6,
         height = 0.5,
         border = 'single',
       },
-    })
+    }
   end,
 }
