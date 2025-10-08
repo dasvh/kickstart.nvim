@@ -1,5 +1,6 @@
 --[[
 
+TODO: fix leader key for telescope from neo-tree
 What is Kickstart?
 
   Kickstart.nvim is *not* a distribution.
@@ -44,7 +45,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -113,6 +114,14 @@ vim.opt.scrolloff = 10
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
 vim.opt.confirm = true
+
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+vim.filetype.add {
+  filename = { ['Taskfile'] = 'yaml' },
+  pattern = { ['.*/%.taskfiles/.*%.ya?ml'] = 'yaml' },
+}
 
 -- highlight ExtraWhitespace
 -- TODO: does not seem to clear all whitespace (-> did not work for yaml file)
@@ -644,7 +653,7 @@ require('lazy').setup({
         -- clangd = {},
         gopls = {},
         bashls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -652,7 +661,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+        ts_ls = {},
         --
 
         lua_ls = {
@@ -666,6 +675,39 @@ require('lazy').setup({
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
+            },
+          },
+        },
+        yamlls = {
+          settings = {
+            yaml = {
+              validate = true,
+              hover = true,
+              completion = true,
+              format = { enable = false },
+              kubernetes = { enable = true },
+              schemaStore = { enable = true },
+              schemas = {
+                ['https://raw.githubusercontent.com/compose-spec/compose-spec/refs/heads/main/schema/compose-spec.json'] = {
+                  'docker-compose*.yml',
+                  'docker-compose*.yaml',
+                  'compose*.yml',
+                  'compose*.yaml',
+                },
+                ['https://json.schemastore.org/github-workflow.json'] = {
+                  '.github/workflows/*.yml',
+                  '.github/workflows/*.yaml',
+                },
+                ['https://json.schemastore.org/gitlab-ci.json'] = {
+                  '.gitlab-ci.yml',
+                  '.gitlab-ci.yaml',
+                },
+                ['https://taskfile.dev/schema.json'] = {
+                  'Taskfile',
+                  'Taskfile.yml',
+                  'Taskfile.yaml',
+                },
+              },
             },
           },
         },
@@ -739,6 +781,14 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        yaml = { 'prettier' },
+        -- markdown = { 'prettier' },
+        python = { 'black' },
+        terraform = { 'terraform_fmt' },
+        tex = { 'latexindent' },
+        sql = { 'prettier' },
+        -- sql = { 'sql_formatter' },
+
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -866,6 +916,19 @@ require('lazy').setup({
     end,
   },
 
+  {
+    'Piotr1215/presenterm.nvim',
+    build = false,
+    config = function()
+      require('presenterm').setup {
+        default_keybindings = true,
+        picker = {
+          provider = 'telescope',
+        },
+      }
+    end,
+  },
+
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
     -- change the command in the config to whatever the name of that colorscheme is.
@@ -944,7 +1007,7 @@ require('lazy').setup({
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
         additional_vim_regex_highlighting = { 'ruby' },
       },
-      indent = { enable = true, disable = { 'ruby' } },
+      indent = { enable = true, disable = { 'ruby', 'yaml' } },
     },
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
@@ -965,9 +1028,9 @@ require('lazy').setup({
   --
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
