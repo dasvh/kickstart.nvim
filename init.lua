@@ -175,6 +175,12 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
+-- helper to jump to diagnostic
+local function diagnostic_jump(count, opts)
+  opts = vim.tbl_extend('force', { count = count, wrap = true, float = true }, opts or {})
+  vim.diagnostic.jump(opts)
+end
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -328,6 +334,9 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>r', group = '[R]efactor' },
+        { '<leader>g', group = '[G]oto' },
+        { '<leader>e', group = '[E]rror Diagnostics' },
       },
     },
   },
@@ -417,6 +426,22 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+
+      vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = '[R]e[n]ame' })
+      vim.keymap.set('n', '<leader>rr', vim.lsp.buf.references, { desc = '[R]eferences' })
+      vim.keymap.set('n', '<leader>gd', builtin.lsp_definitions, { desc = '[G]oto [D]efinition' })
+      vim.keymap.set('n', '<leader>gD', vim.lsp.buf.declaration, { desc = '[G]oto [D]eclaration' })
+      vim.keymap.set('n', '<leader>gi', builtin.lsp_implementations, { desc = '[G]oto [I]mplementation' })
+
+      vim.keymap.set('n', '<leader>gb', '<C-o>', { desc = '[G]o [B]ack' })
+      vim.keymap.set('n', '<leader>gf', '<C-i>', { desc = '[G]o [F]orward' })
+
+      vim.keymap.set('n', '<leader>en', function()
+        diagnostic_jump(vim.v.count1)
+      end, { desc = '[E]rror [N]ext' })
+      vim.keymap.set('n', '<leader>ep', function()
+        diagnostic_jump(-vim.v.count1)
+      end, { desc = '[E]rror [P]revious' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -1014,7 +1039,7 @@ require('lazy').setup({
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
@@ -1026,6 +1051,7 @@ require('lazy').setup({
   -- Or use telescope!
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
   -- you can continue same window with `<space>sr` which resumes last telescope search
+  --
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
