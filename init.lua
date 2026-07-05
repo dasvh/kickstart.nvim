@@ -107,9 +107,7 @@ vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 vim.opt.spelllang = { 'en_us', 'de_ch' }
 vim.api.nvim_create_autocmd('FileType', {
   pattern = { 'markdown', 'gitcommit', 'text', 'rst', 'tex' },
-  callback = function()
-    vim.opt_local.spell = true
-  end,
+  callback = function() vim.opt_local.spell = true end,
 })
 
 -- curl -fLo ~/.config/nvim/spell/de.utf-8.spl https://ftp.nluug.nl/pub/vim/runtime/spell/de.utf-8.spl
@@ -218,6 +216,12 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
   callback = function() vim.hl.on_yank() end,
 })
+
+-- Default indentation settings
+vim.opt.tabstop = 2 -- Number of spaces a <Tab> counts for
+vim.opt.shiftwidth = 2 -- Size of an indent
+vim.opt.softtabstop = 2 -- Spaces a <Tab> counts for during editing
+vim.opt.expandtab = false -- Set to true to use spaces instead of tabs
 
 -- Set correct indendation for Go/templ files
 vim.api.nvim_create_autocmd('FileType', {
@@ -421,7 +425,8 @@ require('lazy').setup({
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>sf', builtin.git_files, { desc = '[S]earch Git [F]iles' })
+      vim.keymap.set('n', '<leader>sF', builtin.find_files, { desc = '[S]earch All [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set({ 'n', 'v' }, '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -432,9 +437,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
       local themes = require 'telescope.themes'
-      vim.keymap.set('n', '<leader>sps', function()
-        builtin.spell_suggest(themes.get_cursor())
-      end, { desc = '[sp]elling: [s]uggestions ' })
+      vim.keymap.set('n', '<leader>sps', function() builtin.spell_suggest(themes.get_cursor()) end, { desc = '[sp]elling: [s]uggestions ' })
 
       -- toggle spell
       vim.keymap.set('n', '<leader>spt', function()
@@ -449,20 +452,18 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>spp', '[s', { desc = '[sp]elling: [p]rev error', silent = true })
 
       vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = '[R]e[n]ame' })
-      vim.keymap.set('n', '<leader>rr', vim.lsp.buf.references, { desc = '[R]eferences' })
+      vim.keymap.set('n', '<leader>rr', builtin.lsp_references, { desc = '[R]eferences' })
       vim.keymap.set('n', '<leader>gd', builtin.lsp_definitions, { desc = '[G]oto [D]efinition' })
       vim.keymap.set('n', '<leader>gD', vim.lsp.buf.declaration, { desc = '[G]oto [D]eclaration' })
+
       vim.keymap.set('n', '<leader>gi', builtin.lsp_implementations, { desc = '[G]oto [I]mplementation' })
+      vim.keymap.set('n', '<leader>gt', builtin.lsp_type_definitions, { desc = '[G]oto [T]ype definition' })
 
       vim.keymap.set('n', '<leader>gb', '<C-o>', { desc = '[G]o [B]ack' })
       vim.keymap.set('n', '<leader>gf', '<C-i>', { desc = '[G]o [F]orward' })
 
-      vim.keymap.set('n', '<leader>en', function()
-        diagnostic_jump(vim.v.count1)
-      end, { desc = '[E]rror [N]ext' })
-      vim.keymap.set('n', '<leader>ep', function()
-        diagnostic_jump(-vim.v.count1)
-      end, { desc = '[E]rror [P]revious' })
+      vim.keymap.set('n', '<leader>en', function() diagnostic_jump(vim.v.count1) end, { desc = '[E]rror [N]ext' })
+      vim.keymap.set('n', '<leader>ep', function() diagnostic_jump(-vim.v.count1) end, { desc = '[E]rror [P]revious' })
 
       -- This runs on LSP attach per buffer (see main LSP attach function in 'neovim/nvim-lspconfig' config for more info,
       -- it is better explained there). This allows easily switching between pickers if you prefer using something else!
@@ -660,6 +661,7 @@ require('lazy').setup({
         ts_ls = {},
         --
 
+        templ = {},
         stylua = {}, -- Used to format Lua code
 
         -- Special Lua Config, as recommended by neovim help docs
